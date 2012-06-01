@@ -1,0 +1,27 @@
+conpaas-director
+================
+
+This application allows to start and stop ConPaaS service managers. The idea is
+that once a manager is running, every subsequent operation can be done directly
+through the manager.
+
+Installation and running
+------------------------
+Ensure you have virtualenv installed 
+    http://pypi.python.org/pypi/virtualenv
+
+On Debian/Ubuntu systems it can be installed by means of 
+    apt-get install python-virtualenv
+
+From within the directory where this README resides
+    virtualenv --no-site-packages .
+    source bin/activate
+    pip install -r requirements.txt
+
+The above mentioned commands will create a isolated Python environment, with
+all the required libraries installed.
+
+Rename director.cfg.example to director.cfg and edit it.
+
+conpaas-directory can then be started as follows:
+    python app.py
