@@ -1,11 +1,5 @@
 [conpaas]
 ROOT_DIR = /home/ema/dev/conpaas/conpaas-services
-DOWNLOAD_URL = http://cumulus.zib.de/conpaas-latest
-
-[manager]
-FE_CREDIT_URL = http://cumulus.zib.de/conpaas-latest
-FE_TERMINATE_URL = http://cumulus.zib.de/conpaas-latest
-FE_SERVICE_ID = 1
 
 [iaas]
 DRIVER = ec2
@@ -18,3 +12,6 @@ SIZE_ID = t1.micro
 
 [director]
 DATABASE_URI = sqlite:///director.db
+# This is where ConPaaS.tar.gz is expected to be found, as well as the
+# decrement credit callback. conpaas-director provides both functionalities
+DIRECTOR_URL = http://your.host.name

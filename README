@@ -23,5 +23,7 @@ all the required libraries installed.
 
 Rename director.cfg.example to director.cfg and edit it.
 
+Also put a copy of ConPaaS.tar.gz here.
+
 conpaas-directory can then be started as follows:
     python app.py

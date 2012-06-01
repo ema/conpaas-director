@@ -1,6 +1,7 @@
-from flask import Flask, jsonify
+from flask import Flask, jsonify, helpers, request
 from flask.ext.sqlalchemy import SQLAlchemy
 
+import os
 import simplejson
 from datetime import datetime
 
@@ -33,6 +34,20 @@ def stop(serviceid):
         return simplejson.dumps(True)
 
     return simplejson.dumps(False)
+
+@app.route("/download/ConPaaS.tar.gz", methods=['GET'])
+def download():
+    return helpers.send_from_directory(os.path.dirname(__file__), 
+        "ConPaaS.tar.gz")
+
+@app.route("/callback/decrementUserCredit.php", methods=['POST'])
+def credit():
+    service_id, decrement = request.values['sid'], request.values['decrement']
+    return jsonify({ 'error': False })
+
+@app.route("/callback/terminateService.php")
+def terminate():
+    pass
 
 class User(db.Model):
     uid = db.Column(db.Integer, primary_key=True, 
@@ -83,4 +98,4 @@ class Service(db.Model):
 
 if __name__ == "__main__":
     db.create_all()
-    app.run(host="0.0.0.0", debug=False)
+    app.run(host="0.0.0.0", debug=True)

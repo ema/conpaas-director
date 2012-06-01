@@ -28,7 +28,6 @@ def __specific_or_default_filename(base, service, suffix, force_default=False):
     return filename.replace(service, 'default')
 
 def __get_context_file(config, cloud, service, service_id):
-    download_url = config.get('conpaas', 'DOWNLOAD_URL')
     root_dir = config.get('conpaas', 'ROOT_DIR')
     cloud_scripts_dir = os.path.join(root_dir, 'scripts', 'cloud')
     cloud_cfg_dir     = os.path.join(root_dir, 'config', 'cloud')
@@ -37,6 +36,7 @@ def __get_context_file(config, cloud, service, service_id):
 
     cloud_script = __try_read_file(os.path.join(cloud_scripts_dir, cloud))
 
+    download_url = config.get('director', 'DIRECTOR_URL')
     mngr_setup   = __try_read_file(os.path.join(mngr_scripts_dir, 
         "manager-setup"))
     mngr_setup   = mngr_setup.replace('%FRONTEND_URL%', download_url)
@@ -84,6 +84,13 @@ def __get_context_file(config, cloud, service, service_id):
 
 def __getcloud(service_name="php", service_id=1):
     config = common.config
+    if not config.has_section("manager"):
+        config.add_section("manager")
+
+    config.set("manager", "FE_SERVICE_ID", str(service_id))
+    config.set("manager", "FE_CREDIT_URL", config.get('director', 'DIRECTOR_URL') + "/credit")
+    config.set("manager", "FE_TERMINATE_URL", config.get('director', 'DIRECTOR_URL') + "/terminate")
+
     controller = Controller(config)
 
     # Mess with private attributes 
