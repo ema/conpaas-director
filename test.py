@@ -2,7 +2,6 @@ import unittest
 import simplejson
 
 import app
-import auth
 import actions
 
 # Monkey-patch actions.start so that we don't actually start instances every
@@ -20,7 +19,7 @@ class Common(unittest.TestCase):
         app.db.create_all()
 
     def create_user(self):
-        return auth.create_user("ema", "Emanuele", "Rocca", "ema@linux.it", 
+        return app.create_user("ema", "Emanuele", "Rocca", "ema@linux.it", 
             "VU University Amsterdam", "properpass", 120)
 
 class DbTest(Common):
@@ -28,14 +27,14 @@ class DbTest(Common):
     def test_create_user(self):
         self.create_user()
 
-        self.assertFalse(auth.auth_user("ema", "wrongpass"))
-        self.assert_(auth.auth_user("ema", "properpass") is not None)
-        self.assertFalse(auth.auth_user("wronguname", "properpass"))
+        self.assertFalse(app.auth_user("ema", "wrongpass"))
+        self.assert_(app.auth_user("ema", "properpass") is not None)
+        self.assertFalse(app.auth_user("wronguname", "properpass"))
 
     def test_create_service(self):
         self.create_user()
 
-        user = auth.auth_user("ema", "properpass")
+        user = app.auth_user("ema", "properpass")
         service = app.Service(name="New selenium service", type="selenium", 
             user=user)
         app.db.session.add(service)
@@ -53,7 +52,7 @@ class DbTest(Common):
         else:
             app.db.session.rollback()
 
-        user = auth.auth_user("ema", "properpass")
+        user = app.auth_user("ema", "properpass")
         self.assertEquals(110, user.credit)
 
         user.credit -= 5000
@@ -63,7 +62,7 @@ class DbTest(Common):
         else:
             app.db.session.rollback()
 
-        user = auth.auth_user("ema", "properpass")
+        user = app.auth_user("ema", "properpass")
         self.assertEquals(110, user.credit)
 
 class DirectorTest(Common):
@@ -156,7 +155,7 @@ class DirectorTest(Common):
         response = self.app.post('/callback/decrementUserCredit.php', data=data)
         self.assertEquals({ 'error': True }, simplejson.loads(response.data))
 
-        user = auth.auth_user("ema", "properpass")
+        user = app.auth_user("ema", "properpass")
         self.assertEquals(120, user.credit)
 
         # Right sid and enough credit
@@ -164,7 +163,7 @@ class DirectorTest(Common):
         response = self.app.post('/callback/decrementUserCredit.php', data=data)
         self.assertEquals({ 'error': False }, simplejson.loads(response.data))
 
-        user = auth.auth_user("ema", "properpass")
+        user = app.auth_user("ema", "properpass")
         self.assertEquals(119, user.credit)
 
 if __name__ == "__main__":

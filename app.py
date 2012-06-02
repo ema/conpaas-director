@@ -2,13 +2,13 @@ from flask import Flask, jsonify, helpers, request
 from flask.ext.sqlalchemy import SQLAlchemy
 
 import os
+import hashlib
 import simplejson
 from datetime import datetime
 
 import common
 # Add ConPaaS src to PYTHONPATH
 common.extend_path()
-import auth
 import actions
 
 app = Flask(__name__)
@@ -16,13 +16,33 @@ app.config['SQLALCHEMY_DATABASE_URI'] = common.config.get(
     'director', 'DATABASE_URI')
 db = SQLAlchemy(app)
 
-def __user_auth():
-    """Return a User object on proper user authentication. False otherwise."""
-    user = auth.auth_user(request.values.get('username', ''), 
-        request.values.get('password', ''))
+def create_user(username, fname, lname, email, affiliation, password, credit):
+    """Create a new user with the given attributes. Return a new User object
+    in case of successful creation. None otherwise."""
+    user = User(username=username, 
+                    fname=fname, 
+                    lname=lname, 
+                    email=email, 
+                    affiliation=affiliation, 
+                    password=hashlib.md5(password).hexdigest(), 
+                    credit=credit)
 
-    if user:
+    db.session.add(user)
+
+    try:
+        db.session.commit()
         return user
+    except Exception:
+        db.session.rollback()
+
+def auth_user(username, password):
+    """Return a User object if the specified (username, password) combination
+    is valid. False otherwise."""
+    res = User.query.filter_by(username=username, 
+        password=hashlib.md5(password).hexdigest()).first()
+
+    if res:
+        return res
 
     return False
 
@@ -36,7 +56,8 @@ def start(servicetype):
     service name and ID) in case of successful authentication and correct
     service creation. An empty dictionary is returned otherwise.
     """
-    user = __user_auth()
+    user = auth_user(request.values.get('username', ''), 
+        request.values.get('password', ''))
 
     if not user:
         # Authentication failed
@@ -62,7 +83,8 @@ def stop(serviceid):
     Returns a boolean value. True in case of successful authentication and
     proper service termination. False otherwise.
     """
-    user = __user_auth()
+    user = auth_user(request.values.get('username', ''), 
+        request.values.get('password', ''))
 
     if user:
         # Authentication succeeded
@@ -150,7 +172,8 @@ class Service(db.Model):
     vmid = db.Column(db.String(256))
 
     user_id = db.Column(db.Integer, db.ForeignKey('user.uid'))
-    user = db.relationship('User', backref=db.backref('services', lazy="dynamic"))
+    user = db.relationship('User', backref=db.backref('services', 
+        lazy="dynamic"))
 
     def __init__(self, **kwargs):
         # Default values

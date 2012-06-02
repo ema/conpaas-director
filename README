@@ -28,7 +28,7 @@ Also put a copy of ConPaaS.tar.gz here.
 Usage
 -----
 Create a new user:
-    python auth.py email@example.org user pass
+    python adduser.py email@example.org user pass
 
 conpaas-directory can then be started as follows:
     python app.py
