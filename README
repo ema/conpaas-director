@@ -5,8 +5,8 @@ This application allows to start and stop ConPaaS service managers. The idea is
 that once a manager is running, every subsequent operation can be done directly
 through the manager.
 
-Installation and running
-------------------------
+Installation 
+------------
 Ensure you have virtualenv installed 
     http://pypi.python.org/pypi/virtualenv
 
@@ -25,5 +25,16 @@ Rename director.cfg.example to director.cfg and edit it.
 
 Also put a copy of ConPaaS.tar.gz here.
 
+Usage
+-----
+Create a new user:
+    python auth.py email@example.org user pass
+
 conpaas-directory can then be started as follows:
     python app.py
+
+New services can easily be started via curl:
+    curl -d "username=user&password=pass" http://director.example.org:5000/start/php
+
+And stopped:
+    curl -d "username=user&password=pass" http://director.example.org:5000/stop/1

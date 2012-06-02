@@ -2,9 +2,10 @@
 ConPaaS director: authentication module
 """
 
+import sys
 import hashlib
 
-import app
+import app 
 
 def create_user(username, fname, lname, email, affiliation, password, credit):
     """Create a new user with the given attributes. Return a new User object
@@ -26,17 +27,19 @@ def create_user(username, fname, lname, email, affiliation, password, credit):
         app.db.session.rollback()
 
 def auth_user(username, password):
-    """Return True if the specified (username, password) combination is valid.
-    False otherwise."""
+    """Return a User object if the specified (username, password) combination
+    is valid. False otherwise."""
     res = app.User.query.filter_by(username=username, 
         password=hashlib.md5(password).hexdigest()).first()
-    return res is not None
+
+    if res:
+        return res
+
+    return False
 
 if __name__ == "__main__":
-    app.db.create_all()
-    u = create_user("ema", "Emanuele", "Rocca", "ema@linux.it", 
-        "VU University Amsterdam", "testpass", 120)
-
-    print auth_user("ema2", "testpass")
-    print auth_user("ema", "testpassa")
-    print auth_user("ema", "testpass")
+    try:
+        email, username, password = sys.argv[1:]
+        create_user(username, "", "", email, "", password, 120)
+    except ValueError:
+        print "Usage: %s email username password" % sys.argv[0]
