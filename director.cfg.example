@@ -1,5 +1,6 @@
 [conpaas]
-ROOT_DIR = /home/ema/dev/conpaas/conpaas-services
+# Path to ConPaaS source code
+ROOT_DIR = /home/user/conpaas/conpaas-services
 
 [iaas]
 DRIVER = ec2
@@ -13,5 +14,6 @@ SIZE_ID = t1.micro
 [director]
 DATABASE_URI = sqlite:///director.db
 # This is where ConPaaS.tar.gz is expected to be found, as well as the
-# decrement credit callback. conpaas-director provides both functionalities
-DIRECTOR_URL = http://your.host.name
+# decrement credit callback. conpaas-director provides both functionalities:
+# put the public IP address of the machine running the director here.
+DIRECTOR_URL = http://your.host.name:5000
