@@ -30,7 +30,7 @@ Usage
 Create a new user:
     python adduser.py email@example.org user pass
 
-conpaas-directory can then be started as follows:
+conpaas-director can then be started as follows:
     python app.py
 
 New services can easily be started via curl:
