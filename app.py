@@ -124,6 +124,11 @@ def credit():
         # The given service does not exist
         return jsonify({ 'error': True })
     
+    if request.remote_addr and request.remote_addr != s.manager:
+        # Possible attack: the request is coming from an IP address which is
+        # NOT the manager's
+        return jsonify({ 'error': True })
+
     # Decrement user's credit
     s.user.credit -= decrement
 
