@@ -98,6 +98,21 @@ def stop(serviceid):
 
     return simplejson.dumps(False)
 
+@app.route("/list", methods=['GET'])
+def list():
+    """GET /list
+
+    List running ConPaaS services.
+    """
+    user = auth_user(request.values.get('username', ''), 
+        request.values.get('password', ''))
+
+    if not user:
+        # Authentication failed
+        return simplejson.dumps([])
+
+    return simplejson.dumps([ ser.to_dict() for ser in user.services.all() ])
+
 @app.route("/download/ConPaaS.tar.gz", methods=['GET'])
 def download():
     """GET /download/ConPaaS.tar.gz
