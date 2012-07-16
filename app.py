@@ -1,7 +1,8 @@
-from flask import Flask, jsonify, helpers, request
+from flask import Flask, jsonify, helpers, request, make_response
 from flask.ext.sqlalchemy import SQLAlchemy
 
 import os
+import sys
 import hashlib
 import simplejson
 from datetime import datetime
@@ -10,6 +11,14 @@ import common
 # Add ConPaaS src to PYTHONPATH
 common.extend_path()
 import actions
+
+if len(sys.argv) > 1 and sys.argv[1] == "dev":
+    # Monkey-patch actions.start so that we don't actually start instances every
+    # time we test. 
+    def fake_action_start(servicetype, serviceid):
+        return "127.0.0.1", "test-vmid"
+    actions.start = fake_action_start
+    actions.stop = lambda vmid: ""
 
 app = Flask(__name__)
 app.config['SQLALCHEMY_DATABASE_URI'] = common.config.get(
@@ -45,6 +54,20 @@ def auth_user(username, password):
         return res
 
     return False
+
+@app.route("/login", methods=['POST'])
+def login():
+    user = auth_user(request.values.get('username', ''), 
+        request.values.get('password', ''))
+
+    if not user:
+        # Authentication failed
+        response = make_response(simplejson.dumps(False))
+    else:
+        response = make_response(simplejson.dumps(True))
+        
+    response.headers['Access-Control-Allow-Origin'] = '*'
+    return response
 
 @app.route("/start/<servicetype>", methods=['POST'])
 def start(servicetype):
