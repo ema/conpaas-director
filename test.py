@@ -1,3 +1,4 @@
+import urllib
 import unittest
 import simplejson
 
@@ -83,6 +84,10 @@ class DirectorTest(Common):
         response = self.app.post('/stop/1')
         self.assertEquals(200, response.status_code)
 
+    def test_200_on_list(self):
+        response = self.app.get('/list')
+        self.assertEquals(200, response.status_code)
+
     def test_200_on_download_conpaas(self):
         response = self.app.get('/download/ConPaaS.tar.gz')
         self.assertEquals(200, response.status_code)
@@ -135,6 +140,27 @@ class DirectorTest(Common):
         # Now /stop/1 should return True
         response = self.app.post('/stop/1', data=data)
         self.assertEquals(True, simplejson.loads(response.data))
+
+    def test_list(self):
+        self.create_user()
+
+        data = { 'username': "ema", 'password': "properpass" }
+        list_url = '/list?' + urllib.urlencode(data)
+
+        # No available service
+        response = self.app.get(list_url)
+        self.assertEquals([], simplejson.loads(response.data))
+
+        # Let's create a service
+        response = self.app.post('/start/php', data=data)
+        servicedict = simplejson.loads(response.data)
+        self.assertEquals(1, servicedict['sid'])
+
+        # Check if it's returned by /list
+        response = self.app.get(list_url)
+        result = simplejson.loads(response.data)
+        self.assertEquals(1, len(result))
+        self.assertEquals('New php service', result[0]['name'])
 
     def test_credit(self):
         self.create_user()

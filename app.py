@@ -121,6 +121,21 @@ def stop(serviceid):
 
     return simplejson.dumps(False)
 
+@app.route("/list", methods=['GET'])
+def list():
+    """GET /list
+
+    List running ConPaaS services.
+    """
+    user = auth_user(request.values.get('username', ''), 
+        request.values.get('password', ''))
+
+    if not user:
+        # Authentication failed
+        return simplejson.dumps([])
+
+    return simplejson.dumps([ ser.to_dict() for ser in user.services.all() ])
+
 @app.route("/download/ConPaaS.tar.gz", methods=['GET'])
 def download():
     """GET /download/ConPaaS.tar.gz
@@ -147,6 +162,11 @@ def credit():
         # The given service does not exist
         return jsonify({ 'error': True })
     
+    if request.remote_addr and request.remote_addr != s.manager:
+        # Possible attack: the request is coming from an IP address which is
+        # NOT the manager's
+        return jsonify({ 'error': True })
+
     # Decrement user's credit
     s.user.credit -= decrement
 
