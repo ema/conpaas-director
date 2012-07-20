@@ -121,9 +121,9 @@ def stop(serviceid):
             actions.stop(s.vmid)
             db.session.delete(s)
             db.session.commit()
-            return simplejson.dumps(True)
+            return build_response(simplejson.dumps(True))
 
-    return simplejson.dumps(False)
+    return build_response(simplejson.dumps(False))
 
 @app.route("/list", methods=['GET'])
 def list():
