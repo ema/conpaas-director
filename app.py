@@ -16,6 +16,8 @@ if len(sys.argv) > 1 and sys.argv[1] == "dev":
     # Monkey-patch actions.start so that we don't actually start instances every
     # time we test. 
     def fake_action_start(servicetype, serviceid):
+        import time
+        time.sleep(5)
         return "127.0.0.1", "test-vmid"
     actions.start = fake_action_start
     actions.stop = lambda vmid: ""
@@ -79,14 +81,14 @@ def start(servicetype):
 
     Returns a dictionary with service data (manager's vmid and IP address,
     service name and ID) in case of successful authentication and correct
-    service creation. An empty dictionary is returned otherwise.
+    service creation. False is returned otherwise.
     """
     user = auth_user(request.values.get('username', ''), 
         request.values.get('password', ''))
 
     if not user:
         # Authentication failed
-        return jsonify({})
+        return build_response(simplejson.dumps(False))
 
     # New service with default name, proper servicetype and user relationship
     s = Service(name="New %s service" % servicetype, type=servicetype, 
@@ -97,7 +99,7 @@ def start(servicetype):
     db.session.flush()
     s.manager, s.vmid = actions.start(servicetype, s.sid)
     db.session.commit()
-    return jsonify(s.to_dict())
+    return build_response(jsonify(s.to_dict()))
 
 @app.route("/stop/<int:serviceid>", methods=['POST'])
 def stop(serviceid):
