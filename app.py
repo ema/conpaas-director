@@ -55,6 +55,11 @@ def auth_user(username, password):
 
     return False
 
+def build_response(data):
+    response = make_response(data)
+    response.headers['Access-Control-Allow-Origin'] = '*'
+    return response
+
 @app.route("/login", methods=['POST'])
 def login():
     user = auth_user(request.values.get('username', ''), 
@@ -62,12 +67,9 @@ def login():
 
     if not user:
         # Authentication failed
-        response = make_response(simplejson.dumps(False))
-    else:
-        response = make_response(simplejson.dumps(True))
-        
-    response.headers['Access-Control-Allow-Origin'] = '*'
-    return response
+        return build_response(simplejson.dumps(False))
+
+    return build_response(simplejson.dumps(True))
 
 @app.route("/start/<servicetype>", methods=['POST'])
 def start(servicetype):
@@ -125,16 +127,18 @@ def stop(serviceid):
 def list():
     """GET /list
 
-    List running ConPaaS services.
+    List running ConPaaS services if the user is authenticated. Return False
+    otherwise.
     """
     user = auth_user(request.values.get('username', ''), 
         request.values.get('password', ''))
 
     if not user:
         # Authentication failed
-        return simplejson.dumps([])
+        return build_response(simplejson.dumps(False))
 
-    return simplejson.dumps([ ser.to_dict() for ser in user.services.all() ])
+    return build_response(
+            simplejson.dumps([ ser.to_dict() for ser in user.services.all() ]))
 
 @app.route("/download/ConPaaS.tar.gz", methods=['GET'])
 def download():
