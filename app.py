@@ -12,6 +12,8 @@ import common
 common.extend_path()
 import actions
 
+from conpaas.core.http import _jsonrpc_get, _jsonrpc_post
+
 if len(sys.argv) > 1 and sys.argv[1] == "dev":
     # Monkey-patch actions.start so that we don't actually start instances every
     # time we test. 
@@ -141,6 +143,21 @@ def list():
 
     return build_response(
             simplejson.dumps([ ser.to_dict() for ser in user.services.all() ]))
+
+@app.route("/manager", methods=['GET','POST'])
+def manager():
+    method = request.values.get('method', '')
+    sid = request.values.get('sid', '')
+
+    service = Service.query.filter_by(sid=sid).one()
+
+    if request.method == "POST":
+        _, res = _jsonrpc_post(str(service.manager), 80, "/", method, request.values)
+
+    else:
+        _, res = _jsonrpc_get(str(service.manager), 80, "/", method)
+
+    return build_response(res)
 
 @app.route("/download/ConPaaS.tar.gz", methods=['GET'])
 def download():
