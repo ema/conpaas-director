@@ -126,16 +126,21 @@ def start(service_name, service_id):
 def stop(vmid):
     c = __getcloud()
     c._connect()
-    # kill_instance() takes an object with an id attribute
+    # kill_instance() takes an object with an id attribute on newer versions of
+    # libcloud
     class Node: pass
     n = Node()
     n.id = vmid
     c.kill_instance(n)
 
-    #vmids = [ vm for vm in c.list_vms().keys() ]
+    # kill_instance() takes a string object on older versions of libcloud
+    vmids = [ vm for vm in c.list_vms().keys() ]
 
-    #if vmid in vmids:
-    #    c.kill_instance(vmid)
+    if vmid in vmids:
+        try:
+            c.kill_instance(vmid)
+        except Exception:
+            pass
 
 if __name__ == "__main__":
     try:

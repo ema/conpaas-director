@@ -148,11 +148,12 @@ def list():
 def manager():
     method = request.values.get('method', '')
     sid = request.values.get('sid', '')
+    params = {}
 
     service = Service.query.filter_by(sid=sid).one()
 
     if request.method == "POST":
-        _, res = _jsonrpc_post(str(service.manager), 80, "/", method, request.values)
+        _, res = _jsonrpc_post(str(service.manager), 80, "/", method, params)
 
     else:
         _, res = _jsonrpc_get(str(service.manager), 80, "/", method)
@@ -183,12 +184,14 @@ def credit():
     s = Service.query.filter_by(sid=service_id).first()
     if not s:
         # The given service does not exist
+        print "The service does not exist"
         return jsonify({ 'error': True })
     
     if request.remote_addr and request.remote_addr != s.manager:
         # Possible attack: the request is coming from an IP address which is
         # NOT the manager's
-        return jsonify({ 'error': True })
+        print "%s != %s" % (request.remote_addr, s.manager)
+        #return jsonify({ 'error': True }) 
 
     # Decrement user's credit
     s.user.credit -= decrement
