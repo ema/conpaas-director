@@ -107,12 +107,18 @@ def start(service_name, service_id):
     c = __getcloud(service_name, service_id)
     new_vm = c.new_instances(1)[0]
 
+    try:
+        new_vm_id = new_vm['id']
+    except TypeError:
+        new_vm_id = new_vm.id
+
     ip = ''
     while not ip:
-        ip = c.list_vms()[new_vm['id']]['ip']
+        vms = c.list_vms()
+        ip = vms[new_vm_id]['ip']
         time.sleep(1)
 
-    return ip, new_vm['id']
+    return ip, new_vm_id
 
     #controller._Controller__deduct_credit = lambda x: True
     #controller.create_nodes(1, 'get_service_info', 80, "ec2")
@@ -120,10 +126,16 @@ def start(service_name, service_id):
 def stop(vmid):
     c = __getcloud()
     c._connect()
-    vmids = [ vm for vm in c.list_vms().keys() ]
+    # kill_instance() takes an object with an id attribute
+    class Node: pass
+    n = Node()
+    n.id = vmid
+    c.kill_instance(n)
 
-    if vmid in vmids:
-        c.kill_instance(vmid)
+    #vmids = [ vm for vm in c.list_vms().keys() ]
+
+    #if vmid in vmids:
+    #    c.kill_instance(vmid)
 
 if __name__ == "__main__":
     try:
