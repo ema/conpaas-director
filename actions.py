@@ -17,7 +17,7 @@ def __try_read_file(filename):
         return open(filename).read()
     except IOError:
         print "Cannot read contextualization script " + filename
-        sys.exit(1)
+        return ""
 
 def __specific_or_default_filename(base, service, suffix, force_default=False):
     filename = os.path.join(base, service + suffix)
