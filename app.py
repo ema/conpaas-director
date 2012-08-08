@@ -33,12 +33,12 @@ def create_user(username, fname, lname, email, affiliation, password, credit):
     """Create a new user with the given attributes. Return a new User object
     in case of successful creation. None otherwise."""
     user = User(username=username, 
-                    fname=fname, 
-                    lname=lname, 
-                    email=email, 
-                    affiliation=affiliation, 
-                    password=hashlib.md5(password).hexdigest(), 
-                    credit=credit)
+                fname=fname, 
+                lname=lname, 
+                email=email, 
+                affiliation=affiliation, 
+                password=hashlib.md5(password).hexdigest(), 
+                credit=credit)
 
     db.session.add(user)
 
@@ -128,7 +128,7 @@ def stop(serviceid):
     return build_response(simplejson.dumps(False))
 
 @app.route("/list", methods=['GET'])
-def list():
+def list_services():
     """GET /list
 
     List running ConPaaS services if the user is authenticated. Return False
@@ -152,7 +152,8 @@ def manager():
     service = Service.query.filter_by(sid=sid).one()
 
     if request.method == "POST":
-        _, res = _jsonrpc_post(str(service.manager), 80, "/", method, request.values)
+        _, res = _jsonrpc_post(str(service.manager), 80, "/", method, 
+        request.values)
 
     else:
         _, res = _jsonrpc_get(str(service.manager), 80, "/", method)
@@ -186,9 +187,11 @@ def credit():
         return jsonify({ 'error': True })
     
     if request.remote_addr and request.remote_addr != s.manager:
-        # Possible attack: the request is coming from an IP address which is
-        # NOT the manager's
-        return jsonify({ 'error': True })
+        # FIXME: When both the director and service masters run on EC2 the IP
+        # address in request.remote_addr is not the public one.
+        #return jsonify({ 'error': True })
+        print "remote_addr != manager_ip (%s != %s)" % (request.remote_addr, 
+            s.manager)
 
     # Decrement user's credit
     s.user.credit -= decrement
