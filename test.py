@@ -100,7 +100,7 @@ class DirectorTest(Common):
         data = { 'username': "wronguser", 'password': "properpass" }
 
         response = self.app.post('/start/php', data=data)
-        self.assertEquals({}, simplejson.loads(response.data))
+        self.assertEquals(False, simplejson.loads(response.data))
 
     def test_proper_start(self):
         self.create_user()
