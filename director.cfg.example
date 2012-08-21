@@ -3,13 +3,20 @@
 ROOT_DIR = /home/user/conpaas/conpaas-services
 
 [iaas]
-DRIVER = ec2
-USER = 
-PASSWORD = 
-SECURITY_GROUP_NAME = 
-KEY_NAME = 
-IMAGE_ID = 
-SIZE_ID = t1.micro
+# Dummy driver config. Mainly useful for testing purposes
+DRIVER = dummy
+USER = dummy
+PASSWORD = dummy
+IMAGE_ID = dummy
+
+# Config for Amazon EC2 
+# DRIVER = ec2
+# USER = 
+# PASSWORD = 
+# SECURITY_GROUP_NAME = 
+# KEY_NAME = 
+# IMAGE_ID = 
+# SIZE_ID = t1.micro
 
 [director]
 DATABASE_URI = sqlite:///director.db

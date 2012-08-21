@@ -5,13 +5,6 @@ import simplejson
 import app
 import actions
 
-# Monkey-patch actions.start so that we don't actually start instances every
-# time we test. 
-def fake_action_start(servicetype, serviceid):
-    return "127.0.0.1", "test-vmid"
-actions.start = fake_action_start
-actions.stop = lambda vmid: ""
-
 class Common(unittest.TestCase):
 
     def setUp(self):
@@ -115,8 +108,10 @@ class DirectorTest(Common):
         self.assertEquals('INIT', servicedict['state'])
         self.assertEquals('php', servicedict['type'])
         self.assertEquals(1, servicedict['user_id'])
-        self.assertEquals('test-vmid', servicedict['vmid'])
-        self.assertEquals('127.0.0.1', servicedict['manager'])
+
+        # Values returned by libcloud's dummy driver
+        self.assertEquals('3', servicedict['vmid'])
+        self.assertEquals('127.0.0.3', servicedict['manager'])
 
     def test_false_stop(self):
         data = { 'username': "wronguser", 'password': "properpass" }

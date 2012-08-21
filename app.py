@@ -14,16 +14,6 @@ import actions
 
 from conpaas.core.http import _jsonrpc_get, _jsonrpc_post
 
-if len(sys.argv) > 1 and sys.argv[1] == "dev":
-    # Monkey-patch actions.start so that we don't actually start instances every
-    # time we test. 
-    def fake_action_start(servicetype, serviceid):
-        import time
-        time.sleep(5)
-        return "127.0.0.1", "test-vmid"
-    actions.start = fake_action_start
-    actions.stop = lambda vmid: ""
-
 app = Flask(__name__)
 app.config['SQLALCHEMY_DATABASE_URI'] = common.config.get(
     'director', 'DATABASE_URI')
