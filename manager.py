@@ -8,39 +8,52 @@ from conpaas.core.misc import file_get_contents
 
 class ManagerController(Controller):
 
+    def __get_ca_cert(self):
+        config_parser = self._Controller__config_parser
+
+        ca_cert_file = os.path.join(config_parser.get('conpaas', 'CERT_DIR'), 
+            "ca_cert.pem")
+
+        return file_get_contents(ca_cert_file)
+
     def _get_context_file(self, service_name, cloud):
         """Override default _get_context_file. Here we generate the context
         file for managers rather than for agents."""
         config_parser = self._Controller__config_parser
 
-        frontend = config_parser.get('director', 'DIRECTOR_URL')
         conpaas_home = config_parser.get('conpaas', 'ROOT_DIR')
-        cloud_scripts_dir = conpaas_home + '/scripts/cloud'
-        cloud_cfg_dir = conpaas_home + '/config/cloud'
-        mngr_cfg_dir = conpaas_home + '/config/manager/'
-        mngr_scripts_dir = conpaas_home + '/scripts/manager/'
+
+        cloud_scripts_dir = os.path.join(conpaas_home, 'scripts', 'cloud')
+        mngr_scripts_dir  = os.path.join(conpaas_home, 'scripts', 'manager')
+        cloud_cfg_dir     = os.path.join(conpaas_home, 'config', 'cloud')
+        mngr_cfg_dir      = os.path.join(conpaas_home, 'config', 'manager')
+
+        frontend = config_parser.get('director', 'DIRECTOR_URL')
 
         # Values to be passed to the context file template
         tmpl_values = {}
 
         # Get contextualization script for the cloud
         tmpl_values['cloud_script'] = file_get_contents(
-            cloud_scripts_dir + '/' + cloud)
+            os.path.join(cloud_scripts_dir, cloud))
 
         # Get manager setup file
-        mngr_setup = file_get_contents(mngr_scripts_dir + '/manager-setup')
+        mngr_setup = file_get_contents(
+            os.path.join(mngr_scripts_dir,'manager-setup'))
+
         tmpl_values['mngr_setup'] = mngr_setup.replace('%FRONTEND_URL%', 
             frontend)
 
         # Get cloud config file 
         tmpl_values['cloud_cfg'] = file_get_contents(
-            cloud_cfg_dir + '/' + cloud + '.cfg')
+            os.path.join(cloud_cfg_dir, cloud + '.cfg'))
 
         # Get manager config file 
-        mngr_cfg = file_get_contents(mngr_cfg_dir + '/default-manager.cfg')
+        mngr_cfg = file_get_contents(
+            os.path.join(mngr_cfg_dir, 'default-manager.cfg'))
 
         # Add service-specific config file (if any)
-        mngr_service_cfg = mngr_cfg_dir + '/' + service_name + '-manager.cfg'
+        mngr_service_cfg = os.path.join(mngr_cfg_dir, service_name + '-manager.cfg')
         if os.path.isfile(mngr_service_cfg):
             mngr_cfg += file_get_contents(mngr_service_cfg)
 
@@ -55,9 +68,12 @@ class ManagerController(Controller):
 
         # Add default manager startup script
         tmpl_values['mngr_start_script'] = file_get_contents(
-            mngr_scripts_dir + '/default-manager-start')
+            os.path.join(mngr_scripts_dir, 'default-manager-start'))
+
         # Or the service-specific one (if any)
-        mngr_startup_scriptname = mngr_scripts_dir + '/' + service_name + '-manager-start'
+        mngr_startup_scriptname = os.path.join(
+            mngr_scripts_dir, service_name + '-manager-start')
+
         if os.path.isfile(mngr_startup_scriptname):
             tmpl_values['mngr_start_script'] = file_get_contents(
                 mngr_startup_scriptname)

@@ -1,6 +1,8 @@
 [conpaas]
 # Path to ConPaaS source code
 ROOT_DIR = /home/user/conpaas/conpaas-services
+# Path to certificates
+CERT_DIR = /var/tmp/certs
 
 [iaas]
 # Dummy driver config. Mainly useful for testing purposes
