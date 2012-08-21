@@ -8,7 +8,6 @@ import sys
 import time
 
 from conpaas.core.controller import Controller
-from conpaas.core.mservices import services
 
 import common
 
@@ -144,6 +143,7 @@ def stop(vmid):
 
 if __name__ == "__main__":
     try:
+        from conpaas.core.mservices import services
         available_services = services.keys()
         if sys.argv[1] not in available_services:
             print sys.argv[1], "is not a known service %s" % available_services

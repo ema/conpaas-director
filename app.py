@@ -12,7 +12,7 @@ import common
 common.extend_path()
 import actions
 
-from conpaas.core.http import _jsonrpc_get, _jsonrpc_post
+from conpaas.core import https
 
 app = Flask(__name__)
 app.config['SQLALCHEMY_DATABASE_URI'] = common.config.get(
@@ -143,10 +143,10 @@ def manager():
     service = Service.query.filter_by(sid=sid).one()
 
     if request.method == "POST":
-        _, res = _jsonrpc_post(str(service.manager), 80, "/", method, 
+        _, res = https.client.jsonrpc_post(str(service.manager), 80, "/", method, 
         request.values)
     else:
-        _, res = _jsonrpc_get(str(service.manager), 80, "/", method)
+        _, res = https.client.jsonrpc_get(str(service.manager), 80, "/", method)
 
     return build_response(res)
 
