@@ -2,7 +2,8 @@ import os
 import sys
 from ConfigParser import ConfigParser
 
-CONFFILE = "director.cfg"
+dirname = os.path.dirname(__file__)
+CONFFILE = os.path.join(dirname, "director.cfg")
 
 config = ConfigParser()
 config.read(CONFFILE)
