@@ -11,7 +11,10 @@ Ensure you have virtualenv installed
     http://pypi.python.org/pypi/virtualenv
 
 On Debian/Ubuntu systems it can be installed by means of 
-    apt-get install python-virtualenv
+    apt-get install python-virtualenv 
+
+You will also need the Python header files
+    apt-get install python-dev
 
 From within the directory where this README resides
     virtualenv --no-site-packages .
