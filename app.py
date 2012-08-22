@@ -10,7 +10,7 @@ from datetime import datetime
 import common
 # Add ConPaaS src to PYTHONPATH
 common.extend_path()
-import actions
+import manager
 
 from conpaas.core import https
 
@@ -89,7 +89,7 @@ def start(servicetype):
     db.session.add(s)
     # flush() is needed to get auto-incremented sid
     db.session.flush()
-    s.manager, s.vmid = actions.start(servicetype, s.sid)
+    s.manager, s.vmid = manager.start(servicetype, s.sid, user.uid)
     db.session.commit()
     return build_response(jsonify(s.to_dict()))
 
@@ -110,7 +110,7 @@ def stop(serviceid):
         s = Service.query.filter_by(sid=serviceid).first()
         if s and s in user.services:
             # If a service with id 'serviceid' exists and user is the owner
-            actions.stop(s.vmid)
+            manager.stop(s.vmid)
             db.session.delete(s)
             db.session.commit()
             return build_response(simplejson.dumps(True))

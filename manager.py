@@ -116,11 +116,13 @@ EOF
 
 %(mngr_start_script)s""" % tmpl_values
 
-def start(service_name, service_id, user_id):
-    """Start a manager for the given service_name, service_id and user_id"""
-    # Add manager configuration
+def __get_config(service_id, user_id):
+    """Add manager configuration"""
     config_parser = common.config
-    config_parser.add_section("manager")
+
+    if not config_parser.has_section("manager"):
+        config_parser.add_section("manager")
+
     config_parser.set("manager", "FE_SERVICE_ID", service_id)
     config_parser.set("manager", "FE_USER_ID", user_id)
     config_parser.set("manager", "FE_CREDIT_URL", 
@@ -130,6 +132,15 @@ def start(service_name, service_id, user_id):
     config_parser.set("manager", "FE_CA_URL", 
         config_parser.get('director', 'DIRECTOR_URL') + "/ca")
 
+    return config_parser
+
+def __stop_reservation_timer(controller):
+    for reservation_timer in controller._Controller__reservation_map.values():
+        reservation_timer.stop()
+
+def start(service_name, service_id, user_id):
+    """Start a manager for the given service_name, service_id and user_id"""
+    config_parser = __get_config(service_id, user_id)
     # Create a new controller
     controller = ManagerController(config_parser)
     # Create a context file for the specific service
@@ -143,13 +154,22 @@ def start(service_name, service_id, user_id):
     node = controller.create_nodes(1, lambda ip, port: True, None)
 
     # Stop the reservation timer or the call will not return
-    for reservation_timer in controller._Controller__reservation_map.values():
-        reservation_timer.stop()
+    __stop_reservation_timer(controller)
 
     return node
 
-if __name__ == "__main__":
-    print start("php", "1", "1")
-    #cert = generate_certificate(cert_dir="/var/tmp/certs", uid="1", sid="1",
-    # role="manager", email="info@conpaas.eu", cn="ConPaaS", org="Contrail")
-    #print cert['cert']
+def stop(vmid):
+    config_parser = __get_config(vmid, "")
+    # Create a new controller
+    controller = ManagerController(config_parser)
+    
+    cloud = controller._Controller__default_cloud
+    cloud._connect()
+    
+    class Node: pass
+    n = Node()
+    n.id = vmid
+    cloud.kill_instance(n)
+
+    __stop_reservation_timer(controller)
+
