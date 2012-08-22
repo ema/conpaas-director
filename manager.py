@@ -168,7 +168,7 @@ class ManagerController(Controller):
         # Concatenate the files
         return """%(cloud_script)s
 
-cat <<EOF > /tmp/ca_cert.pem
+cat <<EOF > /tmp/cert.pem
 %(mngr_certs_cert)s
 EOF
 
