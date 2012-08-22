@@ -4,13 +4,16 @@ from flask.ext.sqlalchemy import SQLAlchemy
 import os
 import sys
 import hashlib
+import zipfile
 import simplejson
 from datetime import datetime
+from StringIO import StringIO
 
 import common
 # Add ConPaaS src to PYTHONPATH
 common.extend_path()
 import manager
+import x509cert
 
 from conpaas.core import https
 
@@ -64,6 +67,41 @@ def login():
         return build_response(simplejson.dumps(False))
 
     return build_response(simplejson.dumps(True))
+
+@app.route("/getcerts", methods=['GET'])
+def getcerts():
+    user = auth_user(request.values.get('username', ''), 
+        request.values.get('password', ''))
+
+    if not user:
+        # Authentication failed
+        return simplejson.dumps(False)
+
+    # Creates new certificates for this user
+    certs = x509cert.generate_certificate(
+        cert_dir=common.config.get('conpaas', 'CERT_DIR'),
+        uid=str(user.uid),
+        sid='0',
+        role='user',
+        email=user.email,
+        cn=user.username,
+        org='Contrail'
+    )
+
+    # In-memory zip file
+    zipdata = StringIO()
+    archive = zipfile.ZipFile(zipdata, mode='w')
+
+    # Add key.pem, cert.pem and ca_cert.pem to the zip file
+    for name, data in certs.items():
+        archive.writestr(name + '.pem', data)
+
+    archive.close()
+    zipdata.seek(0)
+
+    # Send zip archive to the client
+    return helpers.send_file(zipdata, mimetype="application/zip",
+        as_attachment=True, attachment_filename='certs.zip')
 
 @app.route("/start/<servicetype>", methods=['POST'])
 def start(servicetype):
