@@ -36,7 +36,7 @@ def create_x509_cert(cert_dir, x509_req):
     
     # Load private key
     key = crypto.load_privatekey(crypto.FILETYPE_PEM, 
-        file_get_contents(os.path.join(cert_dir, "key.pem")))
+        file_get_contents(os.path.join(cert_dir, "ca_key.pem")))
 
     # Create new certificate
     newcert = crypto.X509()
@@ -101,7 +101,6 @@ class ManagerController(Controller):
 
         cloud_scripts_dir = os.path.join(conpaas_home, 'scripts', 'cloud')
         mngr_scripts_dir  = os.path.join(conpaas_home, 'scripts', 'manager')
-        cloud_cfg_dir     = os.path.join(conpaas_home, 'config', 'cloud')
         mngr_cfg_dir      = os.path.join(conpaas_home, 'config', 'manager')
 
         frontend = config_parser.get('director', 'DIRECTOR_URL')
@@ -120,9 +119,10 @@ class ManagerController(Controller):
         tmpl_values['mngr_setup'] = mngr_setup.replace('%FRONTEND_URL%', 
             frontend)
 
-        # Get cloud config file 
-        tmpl_values['cloud_cfg'] = file_get_contents(
-            os.path.join(cloud_cfg_dir, cloud + '.cfg'))
+        # Get cloud config values from director.cfg
+        tmpl_values['cloud_cfg'] = "[iaas]\n"
+        for key, value in config_parser.items("iaas"):
+            tmpl_values['cloud_cfg'] += key.upper() + " = " + value + "\n"
 
         # Get manager config file 
         mngr_cfg = file_get_contents(
@@ -164,7 +164,7 @@ class ManagerController(Controller):
         tmpl_values['mngr_certs_cert']    = mngr_certs['cert']
         tmpl_values['mngr_certs_key']     = mngr_certs['key']
         tmpl_values['mngr_certs_ca_cert'] = mngr_certs['ca_cert']
-        
+
         # Concatenate the files
         return """%(cloud_script)s
 
