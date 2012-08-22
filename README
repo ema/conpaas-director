@@ -67,7 +67,10 @@ conpaas-director can then be started for testing purposes as follows:
     python app.py
 
 New services can easily be started via curl:
-    curl -d "username=user&password=pass" http://director.example.org:5000/start/php
+    curl --cacert ca_cert.pem -d "username=user&password=pass" https://director.example.org/start/php
 
-And stopped:
-    curl -d "username=user&password=pass" http://director.example.org:5000/stop/1
+Stopped:
+    curl --cacert ca_cert.pem -d "username=user&password=pass" https://director.example.org/stop/1
+
+And listed:
+    curl --cacert ca_cert.pem "https://director.example.org/list?username=user&password=pass"
