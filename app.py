@@ -8,6 +8,7 @@ import zipfile
 import simplejson
 from datetime import datetime
 from StringIO import StringIO
+from OpenSSL import crypto
 
 import common
 # Add ConPaaS src to PYTHONPATH
@@ -73,7 +74,7 @@ def login():
     return build_response(simplejson.dumps(True))
 
 @app.route("/getcerts", methods=['GET'])
-def getcerts():
+def get_user_certs():
     user = auth_user(request.values.get('username', ''), 
         request.values.get('password', ''))
 
@@ -200,6 +201,13 @@ def download():
     """
     return helpers.send_from_directory(os.path.dirname(__file__), 
         "ConPaaS.tar.gz")
+
+@app.route("/ca/get_cert.php", methods=['POST'])
+def get_manager_cert():
+    file = request.files['csr']
+    csr = crypto.load_certificate_request(crypto.FILETYPE_PEM, file.read())
+    return x509cert.create_x509_cert(
+        common.config.get('conpaas', 'CERT_DIR'), csr)
 
 @app.route("/callback/decrementUserCredit.php", methods=['POST'])
 def credit():
