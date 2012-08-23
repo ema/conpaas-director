@@ -12,7 +12,7 @@ from StringIO import StringIO
 import common
 # Add ConPaaS src to PYTHONPATH
 common.extend_path()
-import manager
+import cloud
 import x509cert
 
 from conpaas.core import https
@@ -21,6 +21,10 @@ app = Flask(__name__)
 app.config['SQLALCHEMY_DATABASE_URI'] = common.config.get(
     'director', 'DATABASE_URI')
 db = SQLAlchemy(app)
+
+if common.config.has_option('director', 'DEBUG'):
+    print "Debug mode on"
+    app.debug = True
 
 def create_user(username, fname, lname, email, affiliation, password, credit):
     """Create a new user with the given attributes. Return a new User object
@@ -127,7 +131,7 @@ def start(servicetype):
     db.session.add(s)
     # flush() is needed to get auto-incremented sid
     db.session.flush()
-    s.manager, s.vmid = manager.start(servicetype, s.sid, user.uid)
+    s.manager, s.vmid = cloud.start(servicetype, s.sid, user.uid)
     db.session.commit()
     return build_response(jsonify(s.to_dict()))
 
@@ -148,7 +152,7 @@ def stop(serviceid):
         s = Service.query.filter_by(sid=serviceid).first()
         if s and s in user.services:
             # If a service with id 'serviceid' exists and user is the owner
-            manager.stop(s.vmid)
+            cloud.stop(s.vmid)
             db.session.delete(s)
             db.session.commit()
             return build_response(simplejson.dumps(True))
