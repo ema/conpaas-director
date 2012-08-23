@@ -140,7 +140,7 @@ def __stop_reservation_timer(controller):
 
 def start(service_name, service_id, user_id):
     """Start a manager for the given service_name, service_id and user_id"""
-    config_parser = __get_config(service_id, user_id)
+    config_parser = __get_config(str(service_id), str(user_id))
     # Create a new controller
     controller = ManagerController(config_parser)
     # Create a context file for the specific service
@@ -151,12 +151,12 @@ def start(service_name, service_id, user_id):
     controller._Controller__deduct_credit = lambda x: True
 
     # FIXME: test_manager(ip, port) not implemented yet. Just return True.
-    node = controller.create_nodes(1, lambda ip, port: True, None)
+    node = controller.create_nodes(1, lambda ip, port: True, None)[0]
 
     # Stop the reservation timer or the call will not return
     __stop_reservation_timer(controller)
 
-    return node
+    return node.ip, node.id
 
 def stop(vmid):
     config_parser = __get_config(vmid, "")
