@@ -17,6 +17,7 @@ import cloud
 import x509cert
 
 from conpaas.core import https
+from conpaas.core.services import manager_services
 
 app = Flask(__name__)
 app.config['SQLALCHEMY_DATABASE_URI'] = common.config.get(
@@ -124,6 +125,11 @@ def start(servicetype):
     if not user:
         # Authentication failed
         return build_response(simplejson.dumps(False))
+
+    # Check if we got a valid service type
+    if servicetype not in manager_services.keys():
+        return build_response(jsonify({ 'error': True, 
+                                        'msg': 'Unknown service type' }))
 
     # New service with default name, proper servicetype and user relationship
     s = Service(name="New %s service" % servicetype, type=servicetype, 
